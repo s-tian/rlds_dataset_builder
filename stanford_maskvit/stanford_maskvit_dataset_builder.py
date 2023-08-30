@@ -67,7 +67,7 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
                         ),
                     }),
                     'action': tfds.features.Tensor(
-                        shape=(4,),
+                        shape=(5,),
                         dtype=np.float32,
                         doc='Robot action, consists of [3x change in end effector position, '
                             '1x gripper yaw, 1x open/close gripper (-1 means to open the gripper, 1 means close)].',
@@ -126,6 +126,11 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
 
     def _generate_examples(self, paths) -> Iterator[Tuple[str, Any]]:
         """Generator of examples for each split."""
+
+        import resource
+        low, high = resource.getrlimit(resource.RLIMIT_NOFILE)
+        resource.setrlimit(resource.RLIMIT_NOFILE, (high, high))
+
         language_instruction = "push something"
         # compute Kona language embedding
         language_embedding = self._embed([language_instruction])[0].numpy()
@@ -155,12 +160,12 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
                             gripper_actions.append(np.array([-1.0]))
                         else:
                             gripper_actions.append(np.array([1.0]))
-                    high_bound = obs_dict["high_bound"]
-                    low_bound = obs_dict["low_bound"]
-                    finger_sensors = obs_dict["finger_sensors"]
+                    high_bound = obs_dict["high_bound"].astype(np.float32)
+                    low_bound = obs_dict["low_bound"].astype(np.float32)
+                    finger_sensors = np.array(obs_dict["finger_sensors"]).astype(np.float32)[:, None]
                     qpos_qvel = np.concatenate((obs_dict["qpos"], obs_dict["qvel"]), axis=-1)
-                    states = np.concatenate((qpos_qvel, obs_dict["state"][:, -1:]), axis=-1)
-                    eep = obs_dict["state"][:]
+                    states = np.concatenate((qpos_qvel, obs_dict["state"][:, -1:]), axis=-1).astype(np.float32)
+                    eep = obs_dict["state"][:].astype(np.float32)
                 gripper_actions = np.stack(gripper_actions).astype(actions.dtype)
                 actions = np.concatenate((actions, gripper_actions), axis=-1)
             else:
@@ -173,9 +178,9 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
             # load images into np.uint8 array
             images = []
             for image_path in image_paths:
-                image = Image.open(image_path)
-                image = np.array(image)
-                images.append(image)
+                with Image.open(image_path) as image:
+                    image_np = np.array(image)
+                    images.append(image_np)
 
             # # assemble episode --> here we're not assuming demos so we set reward to 0 always
             episode = []
