@@ -10,8 +10,7 @@ import tensorflow_datasets as tfds
 import tensorflow_hub as hub
 
 
-class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
-# class StanfordMaskViTDataset():
+class StanfordMaskVit(tfds.core.GeneratorBasedBuilder):
 
     """DatasetBuilder for example dataset."""
 
@@ -127,10 +126,6 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
     def _generate_examples(self, paths) -> Iterator[Tuple[str, Any]]:
         """Generator of examples for each split."""
 
-        import resource
-        low, high = resource.getrlimit(resource.RLIMIT_NOFILE)
-        resource.setrlimit(resource.RLIMIT_NOFILE, (high, high))
-
         language_instruction = "push something"
         # compute Kona language embedding
         language_embedding = self._embed([language_instruction])[0].numpy()
@@ -236,7 +231,7 @@ class StanfordMaskViTDataset(tfds.core.GeneratorBasedBuilder):
 
 
 if __name__ == "__main__":
-    dataset = StanfordMaskViTDataset()
+    dataset = StanfordMaskVit()
     split_gens = dataset._split_generators(None)
     for split_name, split_gen in split_gens.items():
         print(split_name)
