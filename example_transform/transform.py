@@ -67,8 +67,14 @@ def transform_step(step: Dict[str, Any]) -> Dict[str, Any]:
         'observation': {
             'image': np.array(img),
         },
+        # the action is [3x EEF position, 3x EEF orientation yaw/pitch/roll, 1x gripper open/close position, 1x terminate episode]
+        # the first 3 elements of the original action are change in EEF xyz position
+        # the next element is the change in yaw
+        # pitch and roll are always 0
+        # the last element is the gripper open/close position
+        # assuming no episode termination action, always 0
         'action': np.concatenate(
-            [step['action'][:3], step['action'][5:8], step['action'][-2:]]),
+            [step['action'][:3], step['action'][3:4], [0, 0], step['action'][-1:], [0]]).astype(np.float32),
     }
 
     # copy over all other fields unchanged
