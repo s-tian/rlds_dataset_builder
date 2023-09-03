@@ -72,9 +72,9 @@ def transform_step(step: Dict[str, Any]) -> Dict[str, Any]:
         # the next element is the change in yaw
         # pitch and roll are always 0
         # the last element is the gripper open/close position
-        # assuming no episode termination action, always 0
+        # episode termination action on last step is always 1, otherwise 0
         'action': np.concatenate(
-            [step['action'][:3], step['action'][3:4], [0, 0], step['action'][-1:], [0]]).astype(np.float32),
+            [step['action'][:3], step['action'][3:4], [0, 0], step['action'][-1:], [step['is_terminal']]]).astype(np.float32),
     }
 
     # copy over all other fields unchanged
