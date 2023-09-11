@@ -1,5 +1,7 @@
 This dataset accompanies the paper [**MaskViT: Masked Visual Pre-Training for Video Prediction**](https://maskedvit.github.io/). 
 
+The raw data before preprocessing can be found here: https://drive.google.com/file/d/1olPNo1p-XIcLcwbifC0Z71pQijP7eY6h/view?usp=drive_link.
+
 At a high level, this is "RoboNet-style" data in that it is random interaction data collected by a robot arm
 and a bin of objects, which are swapped out periodically. 
 The objects mostly consist of soft stuffed toys and plastic objects.
